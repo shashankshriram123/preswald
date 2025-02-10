@@ -1,13 +1,11 @@
 import pickle
-import json
 from datetime import datetime, timezone
 
 # Load the PKL file
 input_file = "/Users/shashankshriram/Downloads/preswald/examples/chess/fabianocaruanaData.pkl"  # Change this to your actual PKL file path
-output_file = "/Users/shashankshriram/Downloads/preswald/examples/chess/refined_output.json"
 
-def refine_chess_data(input_file, output_file):
-    """Refines chess data from a pickle file into a structured JSON format."""
+def refine_chess_data(input_file):
+    """Refines chess data from a pickle file into a structured PKL format."""
     # Load the pickle file
     with open(input_file, "rb") as file:
         chess_data = pickle.load(file)  # Load data from .pkl file
@@ -40,11 +38,14 @@ def refine_chess_data(input_file, output_file):
             "result": result
         })
 
-    # Save the refined JSON file
-    with open(output_file, "w") as file:
-        json.dump(refined_data, file, indent=4)
+    # Define the output file name dynamically
+    output_file = f"/Users/shashankshriram/Downloads/preswald/examples/chess/{username}FormatedData.pkl"
+
+    # Save the refined data as a pickle file
+    with open(output_file, "wb") as file:
+        pickle.dump(refined_data, file)
 
     print(f"✅ Refined data saved to {output_file}")
 
 # Run the function
-refine_chess_data(input_file, output_file)
+refine_chess_data(input_file)

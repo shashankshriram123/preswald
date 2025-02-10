@@ -14,7 +14,7 @@ def load_pickle(file_path):
         print(f"❌ Error loading pickle file: {e}")
 
 # Example usage
-file_path = "/Users/shashankshriram/Downloads/preswald/examples/chess/fabianocaruanaData.pkl"
+file_path = "/Users/shashankshriram/Downloads/preswald/examples/chess/FabianoCaruanaFormatedData.pkl"
 data = load_pickle(file_path)
 
 
