@@ -1,0 +1,3 @@
+[submodule "examples/chess/chess_project/external/calmap"]
+	path = examples/chess/chess_project/external/calmap
+	url = https://github.com/shashankshriram123/calmap.git
