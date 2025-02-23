@@ -1,12 +1,16 @@
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
+import sys
+sys.path.insert(0, "chess_project/external/calmap")
+
 import calmap
+
 from datetime import datetime
 from matplotlib.widgets import Button
 
 # Load JSON data
-json_file = "fabianocaruanaAggregatedData.json"
+json_file = "/Users/shashankshriram/Downloads/preswald/examples/chess/avi-openingAggregatedData.json"
 with open(json_file, "r") as file:
     chess_data = json.load(file)
 
@@ -46,7 +50,14 @@ def plot_yearly_heatmap(year):
     activity_series = df_filtered["games_played"]
     
     # Plot heatmap
-    calmap.yearplot(activity_series, year=year, cmap="Greens", ax=ax)
+    calmap.yearplot(
+        activity_series,
+        year=year,
+        cmap="Greens",
+        ax=ax,
+        daylabels=["", "Mon", "", "Wed", "", "Fri", ""],  # Show only Mon, Wed, Fri
+        dayticks=[1, 3, 5]  # Index positions of Monday, Wednesday, Friday
+    )
     ax.set_title(f"Chess Games Played Heatmap - {year}", fontsize=14)
     
     plt.draw()

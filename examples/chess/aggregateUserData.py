@@ -2,10 +2,8 @@ import json
 from collections import defaultdict
 from datetime import datetime
 
-def aggregate_chess_data(input_file):
+def aggregate_chess_data(data):
     """Aggregates chess data from a JSON file."""
-    with open(input_file, 'r') as file:
-        data = json.load(file)
 
     # Dictionary to store aggregated data
     aggregated_data = defaultdict(lambda: {
@@ -62,4 +60,4 @@ def aggregate_chess_data(input_file):
     # Convert to list for easier processing
     final_data = [{"date": date, **stats} for date, stats in aggregated_data.items()]
 
-    return final_data
+    return {"activity": final_data}

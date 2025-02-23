@@ -13,12 +13,33 @@ def getStartDate(username):
     year, month, _ = date_str.split(" ")[0].split("-")
     return int(year), int(month)
 
+def scapePlayerGameModeStats(username):
+    print(f"🔄 Fetching game statistics for user: {username}...")
+    try:
+        userData = client.get_player_stats(username)
+        gameModeData = userData.json
+        print("✅ Game statistics successfully retrieved.")
+        return gameModeData
+    except Exception as e:
+        print(f"❌ Failed to retrieve stats: {e}")
+        return None
 
-def scapeData(username, startDate, endDate):
+def scrapePlayerProfile(username):
+    print(f"🔄 Fetching player profile for user: {username}...")
+    try:
+        userData = client.get_player_profile(username)
+        profileData = userData.json
+        print("✅ Player profile successfully retrieved.")
+        return profileData
+    except Exception as e:
+        print(f"❌ Failed to retrieve player profile: {e}")
+        return None
+
+def scapePlayerActivityData(username, startDate, endDate):
     all_data = []
 
     for year in range(startDate[0], endDate[0] + 1):
-        print("🗓️ SCRAPING DATA FROM:", year)
+        print("🗓️ SCRAPING ACTIVITY DATA FROM:", year)
         if year == startDate[0]:
             month = startDate[1]
         else:
@@ -82,6 +103,35 @@ def refineData(all_data):
     print("✅ Data refinement complete")
     return refined_data
 
+def fixJSONformat(data):
+
+    # Fix duplicate keys
+    data["player"] = data["player"]["player"]
+    data["stats"] = data["stats"]["stats"]
+    data["activity"] = data["activity"]["activity"]
+
+    # Convert timestamps to readable format
+    def convert_timestamp(ts):
+        return datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+
+    data["player"]["last_online"] = convert_timestamp(data["player"]["last_online"])
+    data["player"]["joined"] = convert_timestamp(data["player"]["joined"])
+
+    # Extract country code from URL
+    data["player"]["country"] = data["player"]["country"].split("/")[-1]
+
+    # Convert timestamps in chess stats
+    for category in ["chess_rapid", "chess_bullet", "chess_blitz"]:
+        if category in data["stats"]:
+            data["stats"][category]["last"]["date"] = convert_timestamp(data["stats"][category]["last"]["date"])
+            data["stats"][category]["best"]["date"] = convert_timestamp(data["stats"][category]["best"]["date"])
+
+    data["stats"]["tactics"]["highest"]["date"] = convert_timestamp(data["stats"]["tactics"]["highest"]["date"])
+    data["stats"]["tactics"]["lowest"]["date"] = convert_timestamp(data["stats"]["tactics"]["lowest"]["date"])
+
+    return data
+
+
 def main():
     username = input("USERNAME: ")
     username = "fabianocaruana"  # Temp, remove later
@@ -90,26 +140,34 @@ def main():
     endDate = today.year, today.month
     startDate = getStartDate(username=username)
 
+    # Get player profile
+    player_profile = scrapePlayerProfile(username=username)
+    # Get game mode stats
+    game_mode_stats = scapePlayerGameModeStats(username=username)
+
+    
     # Get raw game data
-    raw_data = scapeData(username=username, startDate=startDate, endDate=endDate)
+    raw_data = scapePlayerActivityData(username=username, startDate=startDate, endDate=endDate)
 
     # Refine raw data
     refined_data = refineData(all_data=raw_data)
 
-    # Save refined data as JSON
-    json_file_path = f"/Users/shashankshriram/Downloads/preswald/examples/chess/{username}RefinedData.json"
-    with open(json_file_path, "w") as file:
-        json.dump(refined_data, file, indent=4)
 
-    print(f"✅ Refined data saved to {json_file_path}")
+    # Aggregate data
+    aggregated_data = aggregate_chess_data(refined_data)  # Call the function from aggregateUserData.py
 
-    # ✅ Aggregate data
-    aggregated_data = aggregate_chess_data(json_file_path)  # Call the function from aggregateUserData.py
+    # Structure final JSON format
+    final_data = {
+        "player": player_profile,   # Player profile
+        "stats": game_mode_stats,   # Game mode statistics
+        "activity": aggregated_data  # Aggregated activity data
+    }
+    clean_data = fixJSONformat(final_data)
 
     # Save aggregated data as JSON
-    aggregated_json_path = f"/Users/shashankshriram/Downloads/preswald/examples/chess/{username}AggregatedData.json"
+    aggregated_json_path = f"/Users/shashankshriram/Downloads/preswald/examples/chess/test_data/{username}AggregatedData.json"
     with open(aggregated_json_path, "w") as file:
-        json.dump(aggregated_data, file, indent=4)
+        json.dump(clean_data, file, indent=4)
 
     print(f"✅ Aggregated data saved to {aggregated_json_path}")
 
